@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HCI Trends Group Map</title>
+<meta name="color-scheme" content="light only">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap">
+<style>
+/* Layout: centred header with focus question, a toolbar, then one circular map: the topic in the centre, five areas on a ring, each area's concepts on its outer side */
+:root {
+  --bg: #f3f6f7;
+  --surface: #ffffff;
+  --ink: #16202a;
+  --muted: #5a6773;
+  --muted2: #7d8994;
+  --line: #c4ced6;
+  --root: #1d3557;
+  --root-ink: #ffffff;
+  --A: #0d7a70; --B: #4a57b0; --C: #a86400; --D: #b0365a; --E: #3d7a36;
+  --A-t: #e2f2f0; --B-t: #e8eaf7; --C-t: #f6ecdc; --D-t: #f6e3e9; --E-t: #e5f0e3;
+  --g1: #7b3fa6; --g4: #1f7a4c; --g4-t: #e3f3ea; --g2: #1f6fb8; --g3: #c2410c;
+  --head-t: #e7ecf2; --line2: #8f9aa5;
+  --font-ui: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-phrase: "Newsreader", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.5; }
+.page { max-width: 1240px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); display: grid; gap: 22px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--root); outline-offset: 2px; }
+
+header { display: grid; gap: 0; max-width: 980px; margin-inline: auto; text-align: center; justify-items: center; }
+h1 { font-size: clamp(26px, 3.4vw, 36px); line-height: 1.15; margin: 0; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+header h1 { margin-bottom: 18px; }
+header h1::after { content: ""; display: block; width: 56px; height: 3px; border-radius: 2px; background: var(--root); margin: 18px auto 0; }
+.focus { font-family: var(--font-phrase); font-style: italic; font-size: 19px; line-height: 1.4; margin: 0 0 12px; }
+.focus b, .read h2 { font-family: var(--font-ui); font-style: normal; font-weight: 500; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; margin: 0 0 2px; }
+.source { color: var(--muted); font-size: 14px; margin: 0; max-width: 72ch; }
+header .source { max-width: none; }
+.source a { color: var(--ink); text-underline-offset: 3px; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding-block: 10px; }
+.tgroup { display: flex; align-items: center; gap: 10px; }
+.tname { font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 128px; padding: 3px; gap: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--head-t); color: var(--ink); font-weight: 600; }
+.legend { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; align-items: baseline; font-size: 13px; color: var(--muted); }
+.legend .lrow { display: flex; flex-wrap: wrap; gap: 2px 18px; }
+.legend .lrow b { font-weight: 600; margin-right: 4px; }
+.legend .lv { font-family: var(--font-phrase); font-style: italic; font-weight: 500; font-size: 14.5px; color: var(--ink); margin-right: 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend svg { overflow: visible; }
+
+.sunwrap { overflow-x: auto; width: min(calc(100vw - 32px), 1500px); margin-inline: calc((100% - min(100vw - 32px, 1500px)) / 2); }
+#sun { display: block; width: 100%; min-width: 980px; margin: 0 auto; height: auto; }
+#sun .sname { font-family: var(--font-ui); font-size: 13.5px; font-weight: 500; fill: var(--ink); }
+#sun .sname.b { font-size: 15.5px; font-weight: 600; }
+#sun .stheme { font-family: var(--font-ui); font-size: 12.5px; fill: var(--muted); }
+#sun .snode rect { stroke-width: 1.2; stroke-opacity: .6; }
+#sun .shead rect { stroke-width: 1.6; stroke-opacity: 1; }
+#sun .shead { cursor: pointer; outline: none; }
+#sun .shead:focus-visible rect { stroke-width: 3; }
+#sun .stopic { fill: var(--head-t); stroke: var(--root); stroke-width: 2.5; }
+#sun .stopict { fill: var(--root); font-family: var(--font-ui); font-weight: 600; font-size: 15.5px; }
+#sun .slink { stroke-width: 1.4; fill: none; }
+#sun .swedge { opacity: .16; transition: opacity .15s; }
+#sun.hl .swedge:not(.on) { opacity: .05; }
+#sun .sphrase.scph { fill: var(--g1); stroke: none; }
+#sun .sphrase { font-family: var(--font-phrase); font-style: italic; font-size: 14px; font-weight: 500; paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+#sun .lk, #sun .lb, #sun .snode { transition: opacity .15s; }
+#sun.hl .lk:not(.on), #sun.hl .lb:not(.on), #sun.hl .snode:not(.on) { opacity: .15; }
+@media (prefers-reduced-motion: reduce) { #sun .lk, #sun .lb, #sun .snode { transition: none; } }
+
+.guide { display: grid; gap: 8px; }
+.guide details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.guide summary { cursor: pointer; list-style: none; padding: 10px 14px; font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 10px; }
+.guide summary::-webkit-details-marker { display: none; }
+.guide summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .15s; flex: none; }
+.guide details[open] summary::before { transform: rotate(45deg); }
+.guide summary span { font-weight: 400; color: var(--muted); font-size: 13.5px; }
+.gbody { padding: 2px 16px 14px 33px; display: grid; gap: 8px; }
+.gbody p { margin: 0; max-width: 72ch; }
+.gbody .source { font-size: 13.5px; }
+.kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 32px; margin-top: 4px; }
+.kind h3 { margin: 0 0 4px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.kind h3 i { width: 18px; height: 3px; border-radius: 2px; display: inline-block; align-self: center; }
+.kind h3 span { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--muted); font-size: 13.5px; flex-basis: 100%; }
+.vocab { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 14px; margin: 0; font-size: 14px; }
+.vocab dt { font-family: var(--font-phrase); font-style: italic; font-size: 15px; white-space: nowrap; }
+.vocab dd { margin: 0; color: var(--muted); }
+@media (max-width: 1000px) { .kinds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .kinds { grid-template-columns: 1fr; } .gbody { padding-left: 16px; } }
+@media (prefers-reduced-motion: reduce) { .guide summary::before { transition: none; } }
+#sun .wokl { opacity: 0; transition: opacity .15s; }
+#sun.verbs .wokl, #sun.hl .wokl.on { opacity: 1; }
+#sun .wnode rect { stroke-width: 1.6; }
+#sun .wname { font-family: var(--font-ui); font-size: 13.5px; font-weight: 600; fill: var(--ink); }
+#sun .wsub { font-family: var(--font-ui); font-size: 12px; fill: var(--muted); }
+.task3 { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; }
+.task3 h2 { margin: 0; font-size: 18px; }
+.task3 .answer { font-family: var(--font-phrase); font-style: italic; font-size: 18px; margin: 0; }
+.t3grid { display: grid; gap: 12px; }
+.bar { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; font-size: 14px; }
+.bar .lab { font-weight: 600; }
+.bar .track { display: flex; height: 22px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.bar .seg2 { height: 100%; }
+.bar .keys { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 13px; margin-top: -6px; }
+.bar .keys i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.t3grid table, .t3sent { border-collapse: collapse; width: 100%; font-size: 14px; }
+.t3grid td, .t3grid th, .t3sent td, .t3sent th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.t3grid td:last-child, .t3grid th:last-child { text-align: right; }
+.t3note { color: var(--muted); font-size: 13.5px; margin: 0; }
+@media (max-width: 700px) { .bar { grid-template-columns: 1fr; } .bar .keys { grid-column: 1; } }
+.tasks { display: flex; gap: 10px; align-items: center; justify-content: center; margin: -4px 0 14px; font-size: 14px; font-weight: 600; }
+.tasks .t2 { background: var(--head-t); color: var(--root); padding: 4px 12px; border-radius: 999px; }
+.tasks .t3 { background: var(--g4-t); color: var(--g4); padding: 4px 12px; border-radius: 999px; }
+.tasks .sep { color: var(--muted); }
+.below { display: grid; gap: 14px; }
+.legend .ln { display: inline-block; width: 26px; height: 2px; border-radius: 2px; }
+.legend .sw { display: inline-block; width: 22px; height: 13px; border-radius: 3px; }
+.vtoggle { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.vtoggle[aria-pressed="true"] { background: var(--g4-t); color: var(--g4); border-color: var(--g4); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>HCI research on AI and learning</h1>
+    <p class="tasks"><span class="t2">Task 2: research trends</span><span class="sep">+</span><span class="t3">Task 3: ways of knowing</span></p>
+    <p class="focus"><b>Focus question</b><span id="focusq"></span></p>
+    <p class="source" id="note"></p>
+  </header>
+
+
+  <div class="toolbar">
+    <div class="tgroup"><span class="tname">Show</span>
+      <div class="seg" role="group" style="grid-auto-columns:110px">
+        <button id="t2Btn" aria-pressed="false">Task 2</button>
+        <button id="t3Btn" aria-pressed="false">Task 3</button>
+        <button id="t23Btn" aria-pressed="true">Task 2 + 3</button>
+      </div>
+      <button id="verbBtn" class="vtoggle" aria-pressed="false">Verbs on arrows</button>
+      <button id="conBtn" class="vtoggle" aria-pressed="false">Links to concepts</button>
+    </div>
+    <div class="legend">
+      <span class="tname">Verbs</span><div class="lrow" id="legendKinds"></div>
+      <span class="tname">Lines</span><div class="lrow"><span><i class="ln" style="background:var(--g4);height:4px"></i>green: a way of knowing studies a trend area; thicker = more papers (4+, plus each box's strongest link). <b>Links to concepts</b> shows the 30 trends instead</span><span><i class="ln" style="background:var(--line2)"></i>grey: structure (<i>includes</i>, <i>is usually grounded in</i>, Task 2 links)</span></div>
+      <span class="tname">Waves</span><div class="lrow"><span>in green boxes, e.g. <b>3rd + 1st</b>: first = topic of the research, second = how it was evaluated (Bødker 2006, 2015)</span></div>
+      <span class="tname">Boxes</span><div class="lrow"><span><i class="sw" style="background:var(--g4-t);border:1.5px solid var(--g4)"></i>Olson &amp; Kellogg chapter</span><span><i class="sw" style="background:var(--g4-t);border:1.5px dashed var(--g4)"></i>our addition</span><span><i class="sw" style="background:var(--surface);border:1.5px solid var(--root);border-radius:8px"></i>research paradigm</span></div>
+    </div>
+  </div>
+
+  <div class="sunwrap"><svg id="sun" role="img" aria-label="Concept map: HCI research on AI and learning, its research trends and ways of knowing"></svg></div>
+
+  <div class="below">
+  <section class="task3" id="task3"></section>
+  <div class="guide">
+    <details>
+      <summary>How to read the map</summary>
+      <div class="gbody">
+        <p><b>Task 3 part (green):</b> from the centre, follow <i>produces knowledge through</i> down to the Ways of knowing frame. Read each green arrow as a sentence: box name + the verb in the box + the trend area, e.g. <i>Technical HCI Research builds tools for Generative AI</i>. Grey lines show the research paradigm each way of knowing usually rests on.</p>
+        <p>Start at the centre. The five shaded rays lead to the main areas. From there, follow the arrows. Each arrow and its verb make a sentence, read in the direction of the arrow. For example, <i>Over-reliance on AI reduces Learner agency &amp; control</i>.</p>
+        <p>The verb says how the two concepts are linked. Its colour shows the verb type: <b style="color:var(--g1)">Scope</b> says what a concept covers, <b style="color:var(--g2)">Uses &amp; needs</b> what it uses or needs, and <b style="color:var(--g3)">Effects</b> what it affects.</p>
+        <p>A word in front of the verb shows how strong the claim is. With no word, the sentence is true in general. <i>can</i> means it is true in some cases, as in <i>Generative AI &amp; LLMs can support Personalized &amp; adaptive learning</i>. <i>should</i> means it is a goal rather than a finding, as in <i>Responsible &amp; ethical AI should protect Academic integrity</i>.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Linking phrases <span>four verb types: three from Task 2, Studies added for Task 3</span></summary>
+      <div class="gbody">
+        <p>Each verb belongs to one verb type, shown by its colour. <i>can</i> and <i>should</i> are not verb types: they can go in front of any verb to show how strong the claim is, and they do not change its type. "support" and "supports" are the same verb. <i>focuses on</i> appears only on the shaded rays from the centre.</p>
+        <div class="kinds" id="kinds"></div>
+      </div>
+    </details>
+  </div>
+  </div>
+
+</div>
+
+<script>
+const SHEET = {"concepts": [{"id": 1, "name": "Generative AI & LLMs", "links": 20, "papers": 50, "people": 6, "who": "Oksana, Mohsen, Kristina, Madis, Mohammed, Reelika", "keywords": "ai adoption; ai assisted tools; ai native; ai-assisted leaning; ai-assisted research; ai-supported learning; artificial intelligence; chatgpt; code llms; genai; genai adoption; genai resistence; generative ai; generative ai adoption; generative ai assistants; generative ai in education; generative ai in higher education; large language models; learning with llms; llm; llm integration; llms; multimodal large language models; multimodal llm; rag enhanced llm; undisclosed generative artificial intelligence; vision language models"}, {"id": 2, "name": "Co-design & participatory design", "links": 8, "papers": 24, "people": 6, "who": "Oksana, Mohsen, Kristina, Madis, Mohammed, Reelika", "keywords": "co-design; co-design with students; co-design with teachers; co-design workshops; co-exploration; collaborative design; collective making; critical design; design based research; design guidelines; design implications; design workshop; learner-centered design; learning environment design; mutual learning; participatory design; participatory research; remote design collaboration; research through design; student-centered design; students as co-designers; user centered design; user-centered design; value-sensitive design"}, {"id": 3, "name": "Personalized & adaptive learning", "links": 15, "papers": 21, "people": 6, "who": "Oksana, Mohsen, Kristina, Madis, Mohammed, Reelika", "keywords": "adaptive ai integration; adaptive forms; adaptive learning; adaptive learning environments; adaptive self-learning; adaptive user interfaces; content personalization; context-aware learning; educational recommender systems; individualized learning; knowledge tracing; learner modeling; learner profiles; personal learning; personalised ai learning; personalization; personalized information navigation; personalized instruction; personalized learning; recommender systems; retrieval-augmented generation; user modeling; vark model; vark-driven ai tools"}, {"id": 4, "name": "Human–AI collaboration", "links": 11, "papers": 18, "people": 6, "who": "Oksana, Mohsen, Kristina, Madis, Mohammed, Reelika", "keywords": "ai contribution; ai delegation; ai in the loop; co-creation; delegation strategy; gai expansion strategy; human ai collaboration; human-ai co-authoring; human-ai co-creation; human-ai collaboration; human-ai relations; human-ai teams; human-centered ai; human-driven expansion strategy; suggestion timing"}, {"id": 5, "name": "Educational chatbots & conversational AI", "links": 14, "papers": 16, "people": 5, "who": "Oksana, Mohsen, Kristina, Madis, Mohammed", "keywords": "ai adaptive dialogue; ai chatbot; ai video assistants; chatbot-based learning; child-ai interaction; conversational agents; conversational ai; educational chatbots; educational dialogue system; teacher-made chatbots"}, {"id": 6, "name": "Self-regulated learning & metacognition", "links": 9, "papers": 11, "people": 5, "who": "Mohsen, Kristina, Madis, Mohammed, Reelika", "keywords": "calibration; learner awareness; metacognition; reflection; self regulated learning; self-directed learning; self-explanation; self-paced learning; self-regulated learning"}, {"id": 7, "name": "Collaborative learning", "links": 8, "papers": 8, "people": 5, "who": "Oksana, Mohsen, Madis, Mohammed, Reelika", "keywords": "classroom debate; classroom discussion; collaborative learning; collaborative programming; computer-supported learning; group learning; knowledge building; learner-generated content; learnersourcing; student participation"}, {"id": 8, "name": "Transparency & AI disclosure", "links": 7, "papers": 5, "people": 5, "who": "Mohsen, Kristina, Madis, Mohammed, Reelika", "keywords": "ai disclousre; ai transparency; epistemic transparency; process transparency; provenance; transparency; writing process traces"}, {"id": 9, "name": "Programming & CS education", "links": 13, "papers": 16, "people": 4, "who": "Oksana, Madis, Mohammed, Reelika", "keywords": "agent-based modeling; ai-assisted programming; code generation; computational science; computer science education; cs1; cs1 computing education; cs1 education; higher education computer science; human-human-ai programming; llm programming assistants; novice programmers; programming education; programming pedagogy; scientific programming; vibe coding"}, {"id": 10, "name": "Human–AI interaction", "links": 17, "papers": 14, "people": 4, "who": "Oksana, Kristina, Madis, Mohammed", "keywords": "ai-supported user assistance; human ai interaction; human-ai interaction; human-ai-interaction; proactive ai assistance; student-ai interaction"}, {"id": 11, "name": "Responsible & ethical AI", "links": 12, "papers": 10, "people": 4, "who": "Oksana, Mohsen, Kristina, Madis", "keywords": "ai ethics; algorithmic decision-making; critical computing; generative artificial intelligence ethics; higher education policy; llm harms; public-sector ai; responsible ai; responsible ai integration; safety-critical systems"}, {"id": 12, "name": "Pedagogical agents", "links": 16, "papers": 9, "people": 4, "who": "Oksana, Mohsen, Madis, Reelika", "keywords": "ai agent design; ai personality; ai-generated instructors; pedagogical agents; proactive ai; proactive support; social presence; ta agents; virtual avatars"}, {"id": 13, "name": "Multimedia & video learning", "links": 7, "papers": 8, "people": 4, "who": "Oksana, Mohsen, Madis, Reelika", "keywords": "dialogic lectures; educational podcasts; educational video; instructional videos; interactive multimedia; modality transformation; multimedia learning; stem multimodality; text-to-speech; video-based learning"}, {"id": 14, "name": "AI tutors", "links": 15, "papers": 6, "people": 4, "who": "Oksana, Mohsen, Madis, Reelika", "keywords": "ai tutors; course-specific ai tutors; intelligent tutoring systems"}, {"id": 15, "name": "AI literacy", "links": 10, "papers": 6, "people": 4, "who": "Oksana, Kristina, Madis, Reelika", "keywords": "ai literacy; critical ai literacy"}, {"id": 16, "name": "Learner agency & control", "links": 11, "papers": 10, "people": 3, "who": "Mohsen, Madis, Reelika", "keywords": "agency; autonomy; human agency; learner agency; learner control; student voice; user control; user empowerment"}, {"id": 17, "name": "Accessibility & inclusive design", "links": 11, "papers": 8, "people": 3, "who": "Mohsen, Kristina, Mohammed", "keywords": "accessibility design; accessibility guidelines; acessibile content; assistive technology; design for intellectual disabilities; digital accessibility; e inclusiveness; inclsuive design; inclusive design; inclusive hci; information accessibility; low vision and blind programmers; special education; sr programmers; web accessibility"}, {"id": 18, "name": "Serious games & gamification", "links": 13, "papers": 8, "people": 3, "who": "Kristina, Madis, Mohammed", "keywords": "ai assisted game generation; ai mediated play; ai-driven role playing game; boardgames; game analytics; game design; game design framework; game development for educators; game-based learning; games for learning & reflection; gamification; gen-ai powered game; in-game assessment; in-game player experience; narrative game; narrative games; quest design; serious games"}, {"id": 19, "name": "Active & project-based learning", "links": 8, "papers": 8, "people": 3, "who": "Kristina, Madis, Reelika", "keywords": "active learning; experiential learning; informal learning; project-based learning"}, {"id": 20, "name": "Immersive & multimodal interaction", "links": 8, "papers": 7, "people": 3, "who": "Kristina, Madis, Mohammed", "keywords": "augmented reality; biofeedback systems; computer vision motor learning system; cross-device interaction; eye-tracking; gaze-based interaction; immersion; mixed reality; mixed reality interaction; multimodal interaction; virtual classrooms; virtual reality"}, {"id": 21, "name": "AI-supported assessment", "links": 15, "papers": 6, "people": 3, "who": "Mohsen, Madis, Reelika", "keywords": "ai-supported assessment; assessment of ai-assisted work; educational assessment; evidence-based evaluation; programming assessment; writing assessment"}, {"id": 22, "name": "Teachable agents", "links": 10, "papers": 5, "people": 3, "who": "Oksana, Madis, Reelika", "keywords": "learning by teaching; protégé effect; teachable agents; vicarious learning; virtual students"}, {"id": 23, "name": "Explainable AI & trust", "links": 12, "papers": 5, "people": 3, "who": "Oksana, Kristina, Madis", "keywords": "ai explanations; ai-based decision making; algorithmic bias; end-user auditing; explainable ai; fairness; interactive explanations; trust; trust in ai; user trust"}, {"id": 24, "name": "AI peers & companions", "links": 15, "papers": 4, "people": 3, "who": "Oksana, Mohsen, Reelika", "keywords": "ai peers; llm companion; netlogo chat; team-llm collaboration"}, {"id": 25, "name": "Prompt engineering", "links": 10, "papers": 4, "people": 3, "who": "Oksana, Madis, Reelika", "keywords": "prompt engineering; prompt literacy"}, {"id": 26, "name": "Low-code / no-code tools", "links": 5, "papers": 3, "people": 3, "who": "Kristina, Mohammed, Reelika", "keywords": "end-user development; low-code/no-code; no-code platform; trigger-action programming; visual programming"}, {"id": 27, "name": "Over-reliance on AI", "links": 17, "papers": 6, "people": 2, "who": "Mohsen, Reelika", "keywords": "ai influence; dependency on ai; illusion of control; opinion change; over-reliance on ai; reliance on ai"}, {"id": 28, "name": "Role-play & simulation", "links": 9, "papers": 4, "people": 2, "who": "Mohsen, Madis", "keywords": "emotional interaction; interactive fiction; role-play; simulated fieldwork"}, {"id": 29, "name": "AI agents & agentic AI", "links": 11, "papers": 4, "people": 2, "who": "Kristina, Mohammed", "keywords": "agentic ai tools; ai agent; ai driven agents; multimodal agents"}, {"id": 30, "name": "Academic integrity", "links": 9, "papers": 3, "people": 2, "who": "Oksana, Madis", "keywords": "academic integrity; higher education academic integrity"}], "links": [[1, 3, "arguable"], [1, 4, "clear"], [2, 4, "arguable"], [1, 5, "clear"], [3, 5, "arguable"], [3, 6, "arguable"], [5, 6, "arguable"], [1, 7, "weak"], [2, 7, "arguable"], [1, 8, "clear"], [1, 9, "clear"], [4, 9, "arguable"], [5, 9, "arguable"], [7, 9, "arguable"], [1, 10, "clear"], [3, 10, "arguable"], [4, 10, "clear"], [5, 10, "clear"], [8, 10, "arguable"], [1, 11, "clear"], [2, 11, "arguable"], [8, 11, "clear"], [1, 12, "arguable"], [3, 12, "clear"], [5, 12, "clear"], [6, 12, "arguable"], [10, 12, "arguable"], [11, 12, "group"], [1, 13, "arguable"], [3, 13, "arguable"], [12, 13, "arguable"], [1, 14, "clear"], [3, 14, "clear"], [5, 14, "clear"], [6, 14, "arguable"], [9, 14, "clear"], [10, 14, "arguable"], [12, 14, "clear"], [1, 15, "clear"], [2, 15, "arguable"], [6, 15, "arguable"], [8, 15, "arguable"], [9, 15, "arguable"], [11, 15, "clear"], [2, 16, "arguable"], [3, 16, "arguable"], [4, 16, "arguable"], [6, 16, "clear"], [10, 16, "arguable"], [12, 16, "group"], [14, 16, "arguable"], [2, 17, "clear"], [3, 17, "arguable"], [10, 17, "weak"], [11, 17, "arguable"], [13, 17, "arguable"], [14, 17, "group"], [2, 18, "arguable"], [3, 18, "weak"], [5, 18, "arguable"], [7, 18, "arguable"], [10, 18, "group"], [13, 18, "arguable"], [17, 18, "weak"], [2, 19, "arguable"], [6, 19, "arguable"], [7, 19, "clear"], [9, 19, "arguable"], [16, 19, "arguable"], [18, 19, "arguable"], [3, 20, "arguable"], [10, 20, "arguable"], [12, 20, "arguable"], [13, 20, "arguable"], [17, 20, "arguable"], [18, 20, "arguable"], [1, 21, "arguable"], [3, 21, "arguable"], [4, 21, "arguable"], [5, 21, "weak"], [9, 21, "arguable"], [10, 21, "group"], [11, 21, "arguable"], [12, 21, "group"], [14, 21, "arguable"], [18, 21, "group"], [1, 22, "weak"], [3, 22, "arguable"], [5, 22, "arguable"], [6, 22, "clear"], [7, 22, "arguable"], [9, 22, "arguable"], [12, 22, "clear"], [21, 22, "group"], [1, 23, "arguable"], [3, 23, "arguable"], [4, 23, "clear"], [8, 23, "clear"], [10, 23, "clear"], [11, 23, "clear"], [14, 23, "weak"], [15, 23, "arguable"], [18, 23, "group"], [21, 23, "weak"], [22, 23, "group"], [1, 24, "arguable"], [3, 24, "weak"], [4, 24, "arguable"], [5, 24, "arguable"], [7, 24, "clear"], [10, 24, "group"], [11, 24, "group"], [12, 24, "clear"], [14, 24, "arguable"], [17, 24, "group"], [20, 24, "arguable"], [21, 24, "group"], [22, 24, "clear"], [1, 25, "clear"], [4, 25, "arguable"], [5, 25, "arguable"], [9, 25, "arguable"], [10, 25, "clear"], [11, 25, "group"], [15, 25, "clear"], [16, 25, "group"], [9, 26, "arguable"], [17, 26, "arguable"], [19, 26, "arguable"], [25, 26, "arguable"], [1, 27, "clear"], [4, 27, "clear"], [5, 27, "arguable"], [6, 27, "clear"], [8, 27, "weak"], [9, 27, "arguable"], [10, 27, "group"], [11, 27, "arguable"], [12, 27, "group"], [14, 27, "arguable"], [15, 27, "clear"], [16, 27, "arguable"], [21, 27, "group"], [23, 27, "clear"], [24, 27, "weak"], [25, 27, "arguable"], [5, 28, "arguable"], [7, 28, "arguable"], [12, 28, "arguable"], [13, 28, "group"], [18, 28, "clear"], [19, 28, "arguable"], [20, 28, "clear"], [24, 28, "arguable"], [1, 29, "clear"], [4, 29, "clear"], [10, 29, "clear"], [12, 29, "arguable"], [14, 29, "arguable"], [16, 29, "arguable"], [17, 29, "group"], [18, 29, "group"], [26, 29, "arguable"], [28, 29, "group"], [1, 30, "clear"], [8, 30, "clear"], [9, 30, "arguable"], [11, 30, "clear"], [14, 30, "group"], [15, 30, "arguable"], [21, 30, "clear"], [27, 30, "arguable"], [29, 30, "weak"]]};
+const NOTE_T3 = "Upper part: the 30 research trends from our Task 2 papers in five areas. Lower part (green frame): the ways of knowing used in the same 56 papers. Each box says what it does (verb), how many papers used it and with which research approach, and which HCI waves they belong to. Green arrows go to the trend areas these papers studied; grey lines go to the research paradigm each way of knowing usually rests on.";
+const MAP = {"topic": "HCI research on AI and learning", "focus": "What are the main areas of recent HCI research on AI and learning, how do they connect, and through which ways of knowing were they studied?", "note": "Built from the group's agreed cross-reference table of 30 concepts from recent CHI, NordiCHI and INTERACT papers. Click an area to open its concepts, choose Whole map to see everything, or point at a concept to see only its links.", "centre": "focuses on", "areas": [{"key": "E", "head": 11, "theme": "Keeping AI accountable"}, {"key": "A", "head": 1, "theme": "The technology and the roles it takes"}, {"key": "C", "head": 3, "theme": "Learning shaped to each learner"}, {"key": "D", "head": 20, "theme": "AR, VR, gaze and more"}, {"key": "B", "head": 10, "theme": "How people and AI work together"}], "tree": [[1, 12, "can power", 1], [1, 5, "can power", 1], [1, 29, "can power", 1], [12, 14, "include", 1], [12, 24, "include", 1], [12, 22, "include", 1], [1, 9, "can support", 1], [10, 4, "includes", 1], [10, 16, "should protect", 1], [16, 27, "reduces", -1], [16, 6, "support", -1], [16, 2, "support", -1], [16, 19, "supports", -1], [19, 7, "includes", 1], [3, 13, "can use", 1], [3, 17, "can support", 1], [9, 26, "can support", -1], [3, 21, "supports", -1], [20, 28, "supports", 1], [28, 18, "can use", -1], [11, 8, "requires", 1], [11, 23, "requires", 1], [11, 15, "requires", 1], [11, 30, "should protect", 1], [15, 25, "includes", 1]], "areaLinks": [[1, 11, "require"], [1, 3, "can support"], [1, 10, "change"], [20, 10, "changes"]], "cross": [[14, 21, "can include"], [15, 27, "can reduce"], [4, 11, "requires"], [2, 17, "support"], [11, 27, "should reduce"], [1, 27, "can lead to"], [14, 27, "can lead to"], [18, 29, "can use"], [18, 19, "can support"]], "notInTable": [[4, 11]], "kinds": [{"kind": "Scope", "question": "One concept covers the other.", "g": "g1", "short": "what it covers", "phrases": [{"phrase": "focuses on", "meaning": "The research field pays special attention to this area.", "forms": ["focuses on"]}, {"phrase": "includes", "meaning": "The second is a kind or a part of the first.", "forms": ["includes", "include", "can include"]}]}, {"kind": "Uses & needs", "question": "One concept is built on, uses or needs the other.", "g": "g2", "short": "what it uses or needs", "phrases": [{"phrase": "powers", "meaning": "The first is the technology that makes the second work.", "forms": ["can power"]}, {"phrase": "uses", "meaning": "The first makes use of the second.", "forms": ["uses", "use", "can use"]}, {"phrase": "requires", "meaning": "The first needs the second.", "forms": ["requires", "require"]}]}, {"kind": "Effects", "question": "One concept helps, harms, changes or protects the other.", "g": "g3", "short": "what it affects", "phrases": [{"phrase": "supports", "meaning": "The first helps the second.", "forms": ["supports", "support", "can support"]}, {"phrase": "changes", "meaning": "The first makes the second different.", "forms": ["changes", "change"]}, {"phrase": "reduces", "meaning": "The first makes the second smaller or weaker.", "forms": ["reduces", "reduce", "can reduce", "should reduce"]}, {"phrase": "leads to", "meaning": "The first brings about the second.", "forms": ["can lead to"]}, {"phrase": "protects", "meaning": "The first keeps the second from harm or loss.", "forms": ["should protect"]}]}]};
+
+const WOK = {"pnodes": [{"key": "pPrag", "name": "Pragmatism", "n": 24, "keys": ["Pragmatism"]}, {"key": "pPost", "name": "Post-positivism", "n": 11, "keys": ["Post-positivism"]}, {"key": "pInt", "name": "Interpretivism / constructivism", "n": 18, "keys": ["Interpretivism", "Constructivism"]}, {"key": "pCrit", "name": "Critical", "n": 2, "keys": ["Critical"]}], "plinks": [["w6", "pPrag"], ["wP", "pInt"], ["w1", "pInt"], ["w8", "pInt"], ["w15", "pPrag"], ["w15", "pInt"], ["w7", "pInt"], ["wN", "pInt"], ["w9", "pPrag"], ["w9", "pPost"], ["w4", "pPrag"], ["w14", "pPrag"], ["w10", "pPost"], ["w10", "pPrag"], ["w16", "pPrag"], ["w16", "pInt"], ["w8", "pCrit"], ["wN", "pCrit"], ["w14", "pCrit"]], "minLinks": 3, "nodes": [{"key": "w7", "name": "7. Science and Design", "src": "book", "n": 2, "par": "Constructivism", "wave": "3rd", "verb": "reflects on", "appr": "all qualitative"}, {"key": "w15", "name": "15. Retrospective Study Methods", "src": "book", "n": 2, "par": "Pragmatism / Interpretivism", "wave": "2nd + 3rd", "verb": "examines through recall", "appr": "mixed / qualitative"}, {"key": "wP", "name": "Participatory co-design", "src": "ours", "n": 2, "par": "Constructivism", "wave": "2nd + 3rd", "verb": "co-designs", "appr": "all qualitative"}, {"key": "w1", "name": "1. Ethnography", "src": "book", "n": 5, "par": "Interpretivism", "wave": "2nd", "verb": "examines in context", "appr": "all qualitative"}, {"key": "w8", "name": "8. Research Through Design", "src": "book", "n": 8, "par": "Constructivism", "wave": "3rd", "verb": "explores through design", "appr": "mostly qualitative"}, {"key": "w9", "name": "9. Experimental Research", "src": "book", "n": 20, "par": "Pragmatism / Post-positivism", "wave": "1st + 3rd", "verb": "measures effects on", "appr": "mostly mixed"}, {"key": "w4", "name": "4. Technical HCI Research", "src": "book", "n": 23, "par": "Pragmatism", "wave": "1st + 3rd", "verb": "builds tools for", "appr": "mostly mixed"}, {"key": "w6", "name": "6. Field Deployments", "src": "book", "n": 7, "par": "Pragmatism", "wave": "2nd + 3rd", "verb": "studies in real use", "appr": "mostly mixed"}, {"key": "w10", "name": "10. Survey Research", "src": "book", "n": 6, "par": "Post-positivism / Pragmatism", "wave": "1st + 2nd", "verb": "surveys", "appr": "mixed / quantitative"}, {"key": "w14", "name": "14. Log Data and Analysis", "src": "book", "n": 5, "par": "Pragmatism", "wave": "3rd", "verb": "traces use of", "appr": "all mixed"}, {"key": "wN", "name": "Review / conceptual (no chapter match)", "src": "ours", "n": 6, "par": "Interpretivism", "wave": "2nd", "verb": "synthesises", "appr": "mostly qualitative"}, {"key": "w16", "name": "16. Agent-Based Modeling", "src": "book", "n": 2, "par": "Pragmatism / Interpretivism", "wave": "1st + 2nd", "verb": "models", "appr": "mixed / qualitative"}], "links": [["w4", 1, "builds tools for", 13], ["w9", 1, "measures effects on", 10], ["w9", 4, "measures effects on", 7], ["w4", 4, "builds tools for", 7], ["w9", 3, "measures effects on", 7], ["w4", 3, "builds tools for", 6], ["w10", 1, "surveys", 5], ["w9", 9, "measures effects on", 4], ["w9", 16, "measures effects on", 4], ["w6", 1, "studies in real use", 4], ["w4", 16, "builds tools for", 3], ["w8", 2, "explores through design", 3], ["w9", 22, "measures effects on", 3], ["w9", 14, "measures effects on", 3], ["w4", 14, "builds tools for", 3], ["w14", 9, "traces use of", 3], ["w4", 9, "builds tools for", 3], ["wN", 1, "synthesises", 3], ["w9", 5, "measures effects on", 3], ["w4", 5, "builds tools for", 3], ["w14", 1, "traces use of", 3], ["w8", 1, "explores through design", 3], ["w7", 2, "reflects on", 1], ["w15", 27, "examines through recall", 2], ["wP", 2, "co-designs", 2], ["w1", 2, "examines in context", 2], ["w16", 1, "models", 2]], "n": 56, "par": {"Interpretivism": 12, "Pragmatism": 24, "Constructivism": 6, "Post-positivism": 11, "Not established": 1, "Critical": 2}, "waves": {"2nd": 24, "1st": 29, "3rd": 33, "Cross-wave": 2}, "appr": {"Qualitative": 20, "Mixed methods": 29, "Quantitative": 7}, "alinks": [["w4", 1, 19], ["w9", 1, 16], ["w4", 10, 13], ["w9", 10, 12], ["w9", 3, 9], ["w4", 3, 9], ["w6", 1, 6], ["w1", 10, 5], ["w10", 1, 5], ["wN", 1, 4], ["w8", 10, 4], ["w9", 11, 4], ["w14", 1, 4], ["w7", 10, 1], ["w15", 10, 2], ["wP", 10, 2], ["w16", 1, 2]], "aMin": 4, "wappr": {"N": {"Qualitative": 4, "Quantitative": 2}, "8": {"Qualitative": 6, "Mixed methods": 2}, "4": {"Mixed methods": 19, "Quantitative": 2, "Qualitative": 2}, "6": {"Mixed methods": 5, "Qualitative": 2}, "P": {"Qualitative": 2}, "1": {"Qualitative": 5}, "9": {"Mixed methods": 16, "Quantitative": 4}, "14": {"Mixed methods": 5}, "15": {"Mixed methods": 1, "Qualitative": 1}, "7": {"Qualitative": 2}, "10": {"Quantitative": 2, "Mixed methods": 3, "Qualitative": 1}, "3": {"Qualitative": 1}, "18": {"Mixed methods": 1}, "16": {"Mixed methods": 1, "Qualitative": 1}}};
+
+MAP.kinds.find(k => k.kind === "Uses & needs").phrases.push({ phrase: "is usually grounded in", meaning: "Task 3: the way of knowing typically rests on this research paradigm.", forms: ["is usually grounded in"] });
+MAP.kinds.push({ kind: "Studies", question: "Task 3: a way of knowing produces knowledge about a trend.", g: "g4", short: "how a trend is studied", phrases: [
+  { phrase: "produces knowledge through", meaning: "The research field gains its knowledge through these ways of knowing.", forms: ["produces knowledge through"] },
+  { phrase: "builds tools for", meaning: "Builds and evaluates a system for the trend.", forms: ["builds tools for"] },
+  { phrase: "measures effects on", meaning: "Compares conditions and measures outcomes.", forms: ["measures effects on"] },
+  { phrase: "examines in context", meaning: "Observes and interprets people's practice in context.", forms: ["examines in context"] },
+  { phrase: "explores through design", meaning: "Generates knowledge by designing and reflecting.", forms: ["explores through design"] },
+  { phrase: "studies in real use", meaning: "Deploys a system in real settings over time.", forms: ["studies in real use"] },
+  { phrase: "traces use of", meaning: "Analyses recorded interaction logs.", forms: ["traces use of"] },
+  { phrase: "surveys", meaning: "Collects structured responses from many people.", forms: ["surveys"] },
+  { phrase: "co-designs", meaning: "Creates knowledge together with future users.", forms: ["co-designs"] },
+  { phrase: "synthesises", meaning: "Reviews or conceptualises existing work.", forms: ["synthesises"] } ] });
+const C = Object.fromEntries(SHEET.concepts.map(c => [c.id, c]));
+const key = (a, b) => a < b ? a + "-" + b : b + "-" + a;
+const RATING = {};
+SHEET.links.forEach(([a, b, r]) => RATING[key(a, b)] = r);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+// structure: each concept hangs from one parent in its area; the arrow may point either way
+const parentOf = {}, kids = {}, areaOf = {};
+MAP.tree.forEach(([p, c]) => { parentOf[c] = p; (kids[p] = kids[p] || []).push(c); });
+const setArea = (id, k) => { areaOf[id] = k; (kids[id] || []).forEach(c => setArea(c, k)); };
+MAP.areas.forEach(a => setArea(a.head, a.key));
+const isHead = id => MAP.areas.some(a => a.head === id);
+const AR = Object.fromEntries(MAP.areas.map(a => [a.key, a]));
+
+const VOCAB = MAP.kinds.flatMap(k => k.phrases);
+const PH2G = {}; MAP.kinds.forEach(k => k.phrases.forEach(p => p.forms.forEach(f => PH2G[f] = k.g)));
+// checks: every drawn link is in the agreed table (one approved exception), every concept is placed once
+const problems = [];
+const notInTable = new Set(MAP.notInTable.map(([a, b]) => key(a, b)));
+const pairs = [...MAP.tree.map(([p, c]) => [p, c]), ...MAP.areaLinks, ...MAP.cross];
+pairs.forEach(([a, b]) => { if (!RATING[key(a, b)] && !notInTable.has(key(a, b))) problems.push("not in table: " + C[a].name + " / " + C[b].name); });
+const placed = [...MAP.areas.map(a => a.head), ...MAP.tree.map(t => t[1])];
+if (placed.length !== SHEET.concepts.length || new Set(placed).size !== placed.length) problems.push("concepts not placed exactly once");
+[MAP.centre, ...MAP.tree.map(t => t[2]), ...MAP.areaLinks.map(t => t[2]), ...MAP.cross.map(t => t[2])].forEach(ph => {
+  const base = ph.replace(/^(can|should) /, "");
+  if (ph !== MAP.centre && !VOCAB.some(v => v.forms.includes(ph) || v.forms.includes(base))) problems.push("phrase outside the vocabulary: " + ph);
+});
+if (problems.length) console.error("Map problems:", problems);
+window.MAP_PROBLEMS = problems;
+
+document.getElementById("focusq").textContent = MAP.focus;
+document.getElementById("note").textContent = NOTE_T3;
+document.getElementById("legendKinds").innerHTML = MAP.kinds.map(k => `<span><b style="color:var(--${k.g})">${esc(k.kind)}</b>${esc(k.short)}</span>`).join("");
+document.getElementById("kinds").innerHTML = MAP.kinds.map(k => `<div class="kind"><h3 style="color:var(--${k.g})"><i style="background:var(--${k.g})"></i>${esc(k.kind)}<span>${esc(k.question)}</span></h3><dl class="vocab">${k.phrases.map(v => `<dt style="color:var(--${k.g})">${esc(v.phrase)}</dt><dd>${esc(v.meaning)}</dd>`).join("")}</dl></div>`).join("");
+
+// Task 3 summary
+(() => {
+  const COL = ["var(--root)", "var(--g4)", "var(--g1)", "var(--g2)", "var(--g3)", "var(--line2)"];
+  const t = (o, lab, note) => { const e = Object.entries(o).sort((a, b) => b[1] - a[1]), tot = e.reduce((s, x) => s + x[1], 0);
+    return `<div class="bar"><span class="lab">${lab}</span><div class="track">` + e.map(([k, v], i) => `<span class="seg2" title="${esc(k)}: ${v}" style="width:${(100 * v / tot).toFixed(2)}%;background:${COL[i]}"></span>`).join("") +
+      `</div><div class="keys">` + e.map(([k, v], i) => `<span><i style="background:${COL[i]}"></i>${esc(k)} ${v}</span>`).join("") + (note ? `<span>· ${note}</span>` : "") + `</div></div>`; };
+  const asent = WOK.alinks.map(([a, b, n]) => { const w = WOK.nodes.find(x => x.key === a); return `<tr><td>${esc(w.name)} <i>${esc(w.verb)}</i> ${esc(C[b].name)}</td><td>${n}</td></tr>`; }).join("");
+  const sent = WOK.links.map(([a, b, ph, n]) => { const w = WOK.nodes.find(x => x.key === a); return `<tr><td>${esc(w.name)} <i>${esc(ph)}</i> ${esc(C[b].name)}</td><td>${n}</td></tr>`; }).join("");
+  const p = Object.entries(WOK.par).sort((a, b) => b[1] - a[1])[0];
+  document.getElementById("task3").innerHTML = `<h2>Task 3 answer: Which research approaches were used in our papers?</h2>
+  <p class="answer">Predominant paradigm: ${esc(p[0])} (${p[1]} of ${WOK.n} papers), typically Technical HCI Research combined with Experimental Research in mixed-methods designs (${WOK.appr["Mixed methods"]} of ${WOK.n} papers mixed, ${WOK.appr["Qualitative"]} qualitative, ${WOK.appr["Quantitative"]} quantitative). Topics are mainly 2nd- and 3rd-wave; 1st-wave elements enter through experimental evaluation.</p>
+  <div class="t3grid">${t(WOK.par, "Paradigm")}${t(WOK.appr, "Research approach")}${t(WOK.waves, "HCI wave", "one paper can belong to two waves, so mentions add up to " + Object.values(WOK.waves).reduce((s, x) => s + x, 0))}</div>
+  <p class="t3note">DRAFT. Based on ${WOK.n} papers from all three members (4 papers analysed by two members counted once; O'Brien uses Kristina's classification until the group decides). Waves follow Bødker (2006, 2015) for all papers: first = topic of the research, second = how it was evaluated.  Arrow numbers count papers. Use <b>Verbs on arrows</b> to label every arrow and <b>Links to concepts</b> for the detailed view; pointing at a box shows only its links.</p>
+  <details><summary style="cursor:pointer;font-weight:600">Links in detail: the green arrows as sentences</summary><p class="t3note" style="margin:8px 0">To the five trend areas (${WOK.alinks.length} arrows):</p><table class="t3sent"><tr><th>Sentence</th><th>Papers</th></tr>${asent}</table><p class="t3note" style="margin:14px 0 8px">To the 30 trends (${WOK.links.length} links, shown with <b>Links to concepts</b>):</p><table class="t3sent"><tr><th>Sentence</th><th>Papers</th></tr>${sent}</table></details>`;
+})();
+
+// state
+const open = new Set();
+function setOpen(k, on) { on ? open.add(k) : open.delete(k); }
+function syncViewButtons() {}
+let mode = "t23", wokOn = true, t3only = false, verbsOn = false, conOn = false;
+MAP.areas.forEach(a => setOpen(a.key, true));
+const setMode = m => { mode = m; wokOn = m !== "t2"; t3only = m === "t3"; if (m !== "t3") MAP.areas.forEach(a => setOpen(a.key, true)); refresh(); };
+document.getElementById("t2Btn").onclick = () => setMode("t2");
+document.getElementById("t3Btn").onclick = () => setMode("t3");
+document.getElementById("t23Btn").onclick = () => setMode("t23");
+document.getElementById("verbBtn").onclick = () => { verbsOn = !verbsOn; refresh(); };
+document.getElementById("conBtn").onclick = () => { conOn = !conOn; if (conOn && mode !== "t23") { mode = "t23"; wokOn = true; t3only = false; MAP.areas.forEach(a => setOpen(a.key, true)); } refresh(); };
+
+// ---- geometry ----
+const sun = document.getElementById("sun");
+const SUN = {"kx": 1.188, "ky": 1.0076, "pos": {"11": [0, -383], "1": [373, -118], "3": [230, 274], "20": [-230, 274], "10": [-373, -118], "15": [-309, -547], "25": [-143, -765], "8": [36, -628], "23": [214, -642], "30": [368, -560], "5": [356, -410], "12": [642, -342], "24": [618, -547], "22": [855, -451], "14": [832, -205], "9": [737, 0], "29": [594, 114], "21": [713, 387], "26": [808, 181], "17": [71, 568], "13": [368, 568], "28": [-154, 568], "18": [-392, 556], "27": [-345, -328], "16": [-642, -315], "6": [-855, -465], "2": [-511, 181], "4": [-131, -205], "19": [-784, 314], "7": [-879, 484]}, "ringMain": {"1-11": 30, "1-3": 30}, "ringOpen": {"1-11": 30, "1-3": 15}, "bend": {"1-10": 0.06, "18-29": {"orbit": 150}, "2-17": {"orbit": -60}, "14-21": {"orbit": 60}, "14-27": 0.03, "1-27": 0.04}, "labelAt": {"1-10": 0.3, "10-4": 0.4, "14-27": 0.1, "1-27": 0.2, "1-5": 0.62, "2-17": 0.25}, "endAt": {"14-27": [-297, -338], "1-27": [-292, -317]}, "centreAt": 0.45};
+const TOPIC_R = 68;
+const measure = document.createElement("canvas").getContext("2d");
+function wrapBox(text, font, oneLine) {
+  measure.font = font; const W = s => measure.measureText(s).width, words = text.split(" ");
+  if (W(text) <= oneLine || words.length < 2) return [{ t: text, w: W(text) }];
+  let best = null;
+  for (let i = 1; i < words.length; i++) { const a = words.slice(0, i).join(" "), b = words.slice(i).join(" "), m = Math.max(W(a), W(b)); if (!best || m < best.m) best = { m, L: [a, b] }; }
+  return best.L.map(l => ({ t: l, w: W(l) }));
+}
+const lerp = (a, b, t) => a + (b - a) * t;
+const straight = (A, B) => t => [lerp(A[0], B[0], t), lerp(A[1], B[1], t)];
+function bow(A, B, k) {
+  const mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, dx = B[0] - A[0], dy = B[1] - A[1], d = Math.hypot(dx, dy);
+  let nx = -dy / d, ny = dx / d; if (nx * mx + ny * my < 0) { nx = -nx; ny = -ny; }
+  const M = [mx + nx * d * k, my + ny * d * k];
+  return t => [0, 1].map(i => (1 - t) ** 2 * A[i] + 2 * (1 - t) * t * M[i] + t * t * B[i]);
+}
+function ringArc(A, B, bulge) {
+  const qa = [A[0] / SUN.kx, A[1] / SUN.ky], qb = [B[0] / SUN.kx, B[1] / SUN.ky], ra = Math.hypot(...qa), rb = Math.hypot(...qb);
+  let ta = Math.atan2(qa[1], qa[0]), tb = Math.atan2(qb[1], qb[0]);
+  while (tb - ta > Math.PI) tb -= 2 * Math.PI; while (ta - tb > Math.PI) tb += 2 * Math.PI;
+  return t => { const th = lerp(ta, tb, t), r = lerp(ra, rb, t) + bulge * Math.sin(Math.PI * t); return [SUN.kx * r * Math.cos(th), SUN.ky * r * Math.sin(th)]; };
+}
+function through(A, B, pts) {
+  const W = [A, ...pts, B], segs = [], n = W.length;
+  const ext = (i, j) => [2 * W[i][0] - W[j][0], 2 * W[i][1] - W[j][1]];
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = i === 0 ? ext(0, 1) : W[i - 1], p1 = W[i], p2 = W[i + 1], p3 = i + 2 >= n ? ext(n - 1, n - 2) : W[i + 2];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    segs.push(t => [0, 1].map(k => (1 - t) ** 3 * p1[k] + 3 * (1 - t) ** 2 * t * c1[k] + 3 * (1 - t) * t * t * c2[k] + t ** 3 * p2[k]));
+  }
+  const P = []; segs.forEach(f => { for (let j = 0; j < 60; j++) P.push(f(j / 60)); }); P.push(B);
+  const cum = [0]; for (let i = 1; i < P.length; i++) cum.push(cum[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+  const L = cum[cum.length - 1];
+  return t => { const d = t * L; let lo = 0, hi = cum.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (cum[m] < d) lo = m; else hi = m; } const u = (d - cum[lo]) / ((cum[hi] - cum[lo]) || 1); return [lerp(P[lo][0], P[hi][0], u), lerp(P[lo][1], P[hi][1], u)]; };
+}
+const shaped = (A, B, R, dflt) => R == null ? dflt : Array.isArray(R) ? through(A, B, R) : typeof R === "object" ? ringArc(A, B, R.orbit) : bow(A, B, R);
+
+function drawSun() {
+  const shown = id => isHead(id) || (!t3only && open.has(areaOf[id]));
+  const ids = SHEET.concepts.map(c => c.id).filter(shown);
+  const P = id => id === "topic" ? [0, 0] : SUN.pos[id];
+  const BOX = {};
+  ids.forEach(id => {
+    const h = isHead(id), L = wrapBox(C[id].name, h ? '600 15.5px "Instrument Sans"' : '500 13.5px "Instrument Sans"', h ? 200 : 130);
+    let tw = 0; if (h) { measure.font = '400 12.5px "Instrument Sans"'; tw = measure.measureText(AR[areaOf[id]].theme).width; }
+    const lh = h ? 19 : 17, px = h ? 15 : 11, py = h ? 10 : 8, w = Math.max(tw, ...L.map(l => l.w)) + 2 * px, hh = L.length * lh + 2 * py - 2 + (h ? 18 : 0);
+    BOX[id] = { x: P(id)[0] - w / 2, y: P(id)[1] - hh / 2, w, h: hh, lines: L, lh, py, head: h };
+  });
+  const Y0 = t3only ? -300 : 0;
+  const WN = wokOn ? WOK.nodes : [];
+  WN.forEach((w, i) => {
+    const L = wrapBox(w.name, '600 13.5px "Instrument Sans"', 140);
+    measure.font = '400 12px "Instrument Sans"'; const subs = [w.verb, w.n + " papers · " + w.appr, "Waves: " + w.wave];
+    const wd = Math.max(...L.map(l => l.w), ...subs.map(t => measure.measureText(t).width)) + 28;
+    const x = -1100 + i * (2200 / (WN.length - 1)), y = 930 + Y0, hh = 12 + L.length * 17 + subs.length * 15 + 12;
+    BOX[w.key] = { x: x - wd / 2, y: y - hh / 2, w: wd, h: hh, lines: L, subs, wok: w };
+    SUN.pos[w.key] = [x, y];
+  });
+  if (wokOn) {
+    const wb = WN.map(w => BOX[w.key]), fx0 = Math.min(...wb.map(b => b.x)) - 30, fx1 = Math.max(...wb.map(b => b.x + b.w)) + 30,
+      fy0 = Math.min(...wb.map(b => b.y)) - 58, fy1 = Math.max(...wb.map(b => b.y + b.h)) + 24;
+    BOX.wHub = { x: fx0, y: fy0, w: fx1 - fx0, h: fy1 - fy0, frame: true }; SUN.pos.wHub = [0, fy0 + 20];
+    const PN = WOK.pnodes;
+    PN.forEach((p, i) => { const x = -600 + i * (1200 / Math.max(1, PN.length - 1)), y = 1175 + Y0;
+      measure.font = '600 14px "Instrument Sans"'; const t = p.name, st = p.n + " papers" + (i === 0 ? " · predominant" : "");
+      const pw = Math.max(measure.measureText(t).width, measure.measureText(st).width) + 34;
+      BOX[p.key] = { x: x - pw / 2, y: y - 26, w: pw, h: 52, lines: [{ t, w: 0 }], subs: [st], par: true, top: i === 0 }; SUN.pos[p.key] = [x, y]; });
+  }
+  // the theme line sits under each area box and counts as part of it
+  const THEME = {};
+  const inside = (p, b, m) => p[0] > b.x - m && p[0] < b.x + b.w + m && p[1] > b.y - m && p[1] < b.y + b.h + m;
+  const inEnd = (p, id, m) => id === "topic" ? Math.hypot(...p) < TOPIC_R + m : inside(p, BOX[id], m) || (THEME[id] ? inside(p, THEME[id], m) : false);
+  // sample a link and trim it where it enters each end
+  const cut = (f, a, b, gap) => {
+    const N = 300, pts = []; for (let i = 0; i <= N; i++) pts.push(f(i / N));
+    let i0 = 0, i1 = N;
+    while (i0 < N && inEnd(pts[i0], a, 3)) i0++;
+    while (i1 > 0 && inEnd(pts[i1], b, gap)) i1--;
+    return pts.slice(i0, i1 + 1);
+  };
+  const links = [];
+  const ring = open.size ? SUN.ringOpen : SUN.ringMain;
+  // centre to areas
+  MAP.areas.forEach(a => links.push({ kind: "centre", a: "topic", b: a.head, ph: MAP.centre, pts: cut(straight([0, 0], P(a.head)), "topic", a.head, 7) }));
+  // within areas: drawn between parent and child, the arrow follows the sentence
+  MAP.tree.forEach(([p, c, ph, dir]) => {
+    if (!shown(c)) return;
+    const [a, b] = dir === 1 ? [p, c] : [c, p];
+    const f = shaped(P(a), P(b), SUN.bend[a + "-" + b], straight(P(a), P(b)));
+    links.push({ kind: "tree", g: PH2G[ph], a, b, ph, pts: cut(f, a, b, 7) });
+  });
+  const order = MAP.areas.map(a => a.head), n = order.length;
+  MAP.areaLinks.forEach(([a, b, ph]) => { if (t3only) return;
+    const ia = order.indexOf(a), ib = order.indexOf(b), adj = (ia - ib + n) % n === 1 || (ib - ia + n) % n === 1, k = a + "-" + b;
+    const f = adj && SUN.bend[k] == null ? ringArc(P(a), P(b), ring[k] || 0) : shaped(P(a), P(b), SUN.bend[k], bow(P(a), P(b), 0));
+    links.push({ kind: "area", g: PH2G[ph], a, b, ph, pts: cut(f, a, b, 7) });
+  });
+  MAP.cross.forEach(([a, b, ph]) => {
+    if (!shown(a) || !shown(b)) return;
+    const B = (SUN.endAt || {})[a + "-" + b] || P(b);
+    links.push({ kind: "cross", g: PH2G[ph], a, b, ph, pts: cut(shaped(P(a), B, SUN.bend[a + "-" + b], bow(P(a), B, 0.12)), a, b, 7) });
+  });
+
+  if (wokOn) {
+    links.push({ kind: "wok", g: "g4", a: "topic", b: "wHub", ph: "produces knowledge through", n: 3, pts: cut(straight([0, 0], P("wHub")), "topic", "wHub", 7), always: true });
+    WOK.plinks.forEach(([a, b]) => links.push({ kind: "wok", g: "g2", a, b, ph: "is usually grounded in", n: 0, pts: cut(straight(P(a), P(b)), a, b, 7), par: true }));
+  }
+  const topOf = id => { const b = BOX[id]; return [b.x + b.w / 2, b.y]; };
+  if (wokOn && !conOn) {
+    const obst = [...ids.map(id => BOX[id]), ...WN.map(w => BOX[w.key])];
+    const inc = {}; WOK.alinks.forEach(l => (inc[l[1]] = inc[l[1]] || []).push(l));
+    const endX = {}; Object.entries(inc).forEach(([b, L]) => { L.sort((p, q) => topOf(p[0])[0] - topOf(q[0])[0]); const bx = BOX[b], sp = Math.min(bx.w - 30, L.length * 14);
+      L.forEach((l, i) => endX[l[0] + "-" + b] = bx.x + bx.w / 2 + (L.length > 1 ? -sp / 2 + i * sp / (L.length - 1) : 0)); });
+    const out_ = {}; WOK.alinks.forEach(l => (out_[l[0]] = out_[l[0]] || []).push(l));
+    WOK.alinks.forEach(([a, b, n]) => {
+      const w = WOK.nodes.find(x => x.key === a), ba = BOX[a], L = out_[a].slice().sort((p, q) => P(p[1])[0] - P(q[1])[0]), j = L.findIndex(x => x[1] === b);
+      const A = [ba.x + ba.w / 2 + (L.length > 1 ? -18 + j * 36 / (L.length - 1) : 0), ba.y], bb = BOX[b], B = [endX[a + "-" + b], bb.y + bb.h];
+      let best = null, bs = Infinity;
+      for (const d1 of [-250, 0, 250]) for (const d2 of [-1000, -650, -400, -200, 0, 200, 400, 650, 1000]) for (const e2 of [80, 260]) {
+        const C1 = [A[0] + d1, A[1] - 300], C2 = [B[0] + d2, B[1] + e2];
+        const f = t => { const u = 1 - t; return [u*u*u*A[0] + 3*u*u*t*C1[0] + 3*u*t*t*C2[0] + t*t*t*B[0], u*u*u*A[1] + 3*u*u*t*C1[1] + 3*u*t*t*C2[1] + t*t*t*B[1]]; };
+        let sc = 0, len = 0, q0 = A;
+        for (let i = 1; i <= 80; i++) { const q = f(i / 80); len += Math.hypot(q[0] - q0[0], q[1] - q0[1]); q0 = q;
+          if (Math.hypot(q[0], q[1]) < TOPIC_R + 10) sc += 1000;
+          obst.forEach(o => { if (o !== ba && o !== bb && inside(q, o, 8)) sc += o.head ? 1000 : 300; }); }
+        sc += len * 0.05; if (sc < bs) { bs = sc; best = f; }
+      }
+      links.push({ kind: "wok", g: "g4", a, b, ph: w.verb + " (" + n + ")", n, pts: cut(best, a, b, 7) });
+    });
+  }
+  if (wokOn && conOn) WOK.links.forEach(([a, b, ph, n]) => {
+    if (!shown(b)) return;
+    links.push({ kind: "wok", g: "g4", a, b, ph: ph + " (" + n + ")", n, pts: cut(bow(P(a), P(b), 0.06), a, b, 7) });
+  });
+
+  // phrases: try spots along each link and keep the one that covers the fewest boxes, other phrases and other lines
+  measure.font = 'italic 400 14px Newsreader';
+  const blocks = ids.map(id => ({ x: BOX[id].x - 4, y: BOX[id].y - 4, w: BOX[id].w + 8, h: BOX[id].h + 8 }));
+  Object.values(THEME).forEach(t => blocks.push(t));
+  WOK.pnodes.map(p => p.key).forEach(k => { const bx = BOX[k]; if (bx) blocks.push({ x: bx.x - 4, y: bx.y - 4, w: bx.w + 8, h: bx.h + 8 }); });
+  WN.forEach(w => { const bx = BOX[w.key]; blocks.push({ x: bx.x - 4, y: bx.y - 4, w: bx.w + 8, h: bx.h + 8 }); });
+  blocks.push({ x: -TOPIC_R, y: -TOPIC_R, w: 2 * TOPIC_R, h: 2 * TOPIC_R });
+  const ov = (r, o) => Math.max(0, Math.min(r.x + r.w, o.x + o.w) - Math.max(r.x, o.x)) * Math.max(0, Math.min(r.y + r.h, o.y + o.h) - Math.max(r.y, o.y));
+  const taken = [], rank = { centre: 0, area: 1, tree: 2, cross: 3, wok: 4 };
+  links.slice().sort((p, q) => rank[p.kind] - rank[q.kind]).forEach(l => {
+    const w = measure.measureText(l.ph).width + 8, h = 17;
+    // the centre's phrase sits inside its ray, turned to follow it
+    if (l.kind === "centre") {
+      const [x0, y0] = l.pts[0], [x1, y1] = l.pts[l.pts.length - 1], t = SUN.centreAt || 0.5, cx = lerp(x0, x1, t), cy = lerp(y0, y1, t);
+      let ang = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI; if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
+      const r = ang * Math.PI / 180, bw = Math.abs(w * Math.cos(r)) + Math.abs(h * Math.sin(r)), bh = Math.abs(w * Math.sin(r)) + Math.abs(h * Math.cos(r));
+      l.label = { x: cx - bw / 2, y: cy - bh / 2, w: bw, h: bh, cx, cy, rot: ang }; taken.push(l.label); return;
+    }
+    const cum = [0]; for (let i = 1; i < l.pts.length; i++) cum.push(cum[i - 1] + Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]));
+    const L = cum[cum.length - 1], at = s => { let i = cum.findIndex(c => c >= s * L); return l.pts[i < 0 ? cum.length - 1 : i]; };
+    const spots = SUN.labelAt && SUN.labelAt[l.a + "-" + l.b] ? [SUN.labelAt[l.a + "-" + l.b]] : [0.5, 0.44, 0.56, 0.38, 0.62, 0.32, 0.68, 0.26, 0.74, 0.2, 0.8];
+    let best = null, score = Infinity;
+    for (const s of spots) for (const dy of [0, -9, 9]) {
+      const p = at(s), r = { x: p[0] - w / 2, y: p[1] + dy - h / 2, w, h };
+      const crossed = links.reduce((t, o) => o === l ? t : t + o.pts.filter(q => q[0] > r.x && q[0] < r.x + r.w && q[1] > r.y && q[1] < r.y + r.h).length, 0);
+      const sc = blocks.reduce((t, o) => t + ov(r, o), 0) + taken.reduce((t, o) => t + 3 * ov(r, o), 0) + crossed * 120 + Math.abs(s - 0.5) * 40 + Math.abs(dy) * 2;
+      if (sc < score) { score = sc; best = r; }
+    }
+    l.label = best; taken.push(best);
+  });
+  window.LAYOUT = { links, BOX, THEME, taken };
+
+  const d = pts => "M" + pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L");
+  const mk = (id, col, s) => `<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="${s}" markerHeight="${s}" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:${col}"/></marker>`;
+  let out = `<defs>${mk("m-grey", "var(--line2)", 7)}<marker id="m-g4" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--g4)"/></marker></defs>`;
+  MAP.areas.forEach(a => { const [cx, cy] = P(a.head), L = Math.hypot(cx, cy), bx = BOX[a.head]; let t = 0; while (t < 1 && !inside([cx * t, cy * t], bx, 0)) t += 0.005;
+    const x = cx, y = cy, nx = -cy / L, ny = cx / L, hw = Math.min(bx.h, bx.w) / 2 - 3, tw = 5;
+    out += `<path class="swedge" data-a="topic" data-b="${a.head}" d="M${(nx * tw).toFixed(1)},${(ny * tw).toFixed(1)} L${(x + nx * hw).toFixed(1)},${(y + ny * hw).toFixed(1)} L${(x - nx * hw).toFixed(1)},${(y - ny * hw).toFixed(1)} L${(-nx * tw).toFixed(1)},${(-ny * tw).toFixed(1)} Z" style="fill:var(--${a.key})"/>`; });
+  if (wokOn) { const b = BOX.wHub;
+    out += `<g class="snode wnode" data-id="wHub"><rect x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${b.w.toFixed(1)}" height="${b.h.toFixed(1)}" rx="18" style="fill:var(--g4-t);fill-opacity:.35;stroke:var(--g4);stroke-width:1.6;stroke-dasharray:8 5"/>` +
+      `<text class="wname" x="${(b.x + 22).toFixed(1)}" y="${(b.y + 28).toFixed(1)}" style="font-size:17px;fill:var(--g4)">Ways of knowing</text>` +
+      `<text class="wsub" x="${(b.x + 168).toFixed(1)}" y="${(b.y + 28).toFixed(1)}">Olson &amp; Kellogg (2014) chapters + our additions (dashed) · ordered to reduce crossing lines</text></g>`; }
+  links.forEach(l => {
+    if (l.kind === "centre") return;
+    out += l.kind === "wok"
+      ? (l.hub || l.par ? `<path class="lk slink" data-a="${l.a}" data-b="${l.b}" d="${d(l.pts)}" style="stroke:var(--line2);stroke-opacity:.7" marker-end="url(#m-grey)"/>`
+        : `<path class="lk slink" data-a="${l.a}" data-b="${l.b}" d="${d(l.pts)}" style="stroke:var(--g4);stroke-opacity:.5;stroke-width:${(0.8 + l.n * 0.32).toFixed(2)}" marker-end="url(#m-g4)"/>`)
+      : `<path class="lk slink" data-a="${l.a}" data-b="${l.b}" d="${d(l.pts)}" style="stroke:var(--line2)" marker-end="url(#m-grey)"/>`;
+  });
+  const tl = ["HCI research", "on AI and", "learning"];
+  out += `<g class="snode" data-id="topic"><circle r="${TOPIC_R}" class="stopic"/>` + tl.map((t, i) => `<text class="stopict" text-anchor="middle" y="${(i - 1) * 19 + 5}">${t}</text>`).join("") + `</g>`;
+  links.forEach(l => out += l.kind === "centre"
+    ? `<text class="lb sphrase scph" data-a="${l.a}" data-b="${l.b}" x="${l.label.cx.toFixed(1)}" y="${(l.label.cy + 4.5).toFixed(1)}" text-anchor="middle" transform="rotate(${l.label.rot.toFixed(1)} ${l.label.cx.toFixed(1)} ${l.label.cy.toFixed(1)})">${esc(l.ph)}</text>`
+    : `<text class="lb sphrase${l.kind === "wok" && !l.always ? " wokl" : ""}" data-a="${l.a}" data-b="${l.b}" style="fill:var(--${l.g})" x="${(l.label.x + l.label.w / 2).toFixed(1)}" y="${(l.label.y + 12.5).toFixed(1)}" text-anchor="middle">${esc(l.ph)}</text>`);
+  ids.forEach(id => {
+    const b = BOX[id], k = areaOf[id], cx = b.x + b.w / 2;
+    const a = b.head ? AR[k] : null;
+    out += `<g class="snode${b.head ? " shead" : ""}" data-id="${id}"${b.head ? ` data-b="${k}" role="button" tabindex="0" aria-expanded="${open.has(k)}" aria-label="${esc(C[id].name)} (${esc(a.theme)}): show or hide its concepts"` : ""}><rect x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${b.w.toFixed(1)}" height="${b.h.toFixed(1)}" rx="9" style="fill:${b.head ? `var(--${k}-t)` : "var(--surface)"};stroke:var(--${k})"/>` +
+      b.lines.map((L, i) => `<text class="sname${b.head ? " b" : ""}" text-anchor="middle" x="${cx.toFixed(1)}" y="${(b.y + b.py + (i + 0.78) * b.lh).toFixed(1)}">${esc(L.t)}</text>`).join("") +
+      (b.head ? `<text class="stheme" text-anchor="middle" x="${cx.toFixed(1)}" y="${(b.y + b.h - 10).toFixed(1)}">${esc(a.theme)}</text>` : "") + `</g>`;
+  });
+  WN.forEach(w => {
+    const b = BOX[w.key], cx = b.x + b.w / 2, ours = w.src === "ours";
+    out += `<g class="snode wnode" data-id="${w.key}"><rect x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${b.w.toFixed(1)}" height="${b.h.toFixed(1)}" rx="9" style="fill:var(--g4-t);stroke:var(--g4)${ours ? ";stroke-dasharray:5 3" : ""}"/>` +
+      b.lines.map((L, i) => `<text class="wname" text-anchor="middle" x="${cx.toFixed(1)}" y="${(b.y + 12 + (i + 0.78) * 17).toFixed(1)}">${esc(L.t)}</text>`).join("") +
+      b.subs.map((t, i) => `<text class="wsub" text-anchor="middle"${i === 0 ? ` style="fill:var(--g4);font-style:italic;font-family:var(--font-phrase);font-size:13.5px"` : ""} x="${cx.toFixed(1)}" y="${(b.y + 12 + b.lines.length * 17 + (i + 0.85) * 15).toFixed(1)}">${esc(t)}</text>`).join("") + `</g>`;
+  });
+  WOK.pnodes.map(p => p.key).forEach(k => { const b = BOX[k]; if (!wokOn || !b) return; const cx = b.x + b.w / 2;
+    const fill = b.hub ? "var(--g4-t)" : (b.top ? "var(--head-t)" : "var(--surface)"), stroke = b.hub ? "var(--g4)" : "var(--root)";
+    out += `<g class="snode wnode" data-id="${k}"><rect x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${b.w.toFixed(1)}" height="${b.h.toFixed(1)}" rx="${b.par ? 26 : 9}" style="fill:${fill};stroke:${stroke};stroke-width:${b.top || b.hub ? 2.2 : 1.4}"/>` +
+      `<text class="wname" text-anchor="middle" x="${cx.toFixed(1)}" y="${(b.y + 22).toFixed(1)}" style="font-size:${b.hub ? 15.5 : 14}px">${esc(b.lines[0].t)}</text>` +
+      `<text class="wsub" text-anchor="middle" x="${cx.toFixed(1)}" y="${(b.y + 40).toFixed(1)}">${esc(b.subs[0])}</text></g>`; });
+  if (wokOn) out += `<text class="stheme" text-anchor="end" x="-740" y="${1168 + Y0}" style="font-family:var(--font-phrase);font-style:italic;font-size:14px;fill:var(--g2)">… is usually grounded in</text><text class="stheme" text-anchor="end" x="-740" y="${1188 + Y0}" style="font-weight:600;fill:var(--root)">Research paradigms</text>`;
+  sun.innerHTML = out;
+  const bb = sun.getBBox(), m = 40;
+  sun.setAttribute("viewBox", `${(bb.x - m).toFixed(1)} ${(bb.y - m).toFixed(1)} ${(bb.width + 2 * m).toFixed(1)} ${(bb.height + 2 * m).toFixed(1)}`);
+  sun.style.maxWidth = (bb.width + 2 * m) + "px";
+}
+// pointing at a concept shows its links and the concepts at their other ends
+function lightUp(id) {
+  sun.classList.toggle("hl", id != null);
+  sun.querySelectorAll(".on").forEach(e => e.classList.remove("on"));
+  if (id == null) return;
+  sun.querySelectorAll(`[data-a="${id}"], [data-b="${id}"]`).forEach(e => {
+    if (!e.matches(".lk, .lb, .swedge")) return;
+    e.classList.add("on");
+    [e.dataset.a, e.dataset.b].forEach(x => { const g = sun.querySelector(`.snode[data-id="${x}"]`); if (g) g.classList.add("on"); });
+  });
+  const g = sun.querySelector(`.snode[data-id="${id}"]`); if (g) g.classList.add("on");
+}
+sun.addEventListener("pointerover", e => { const g = e.target.closest(".snode"); lightUp(g ? g.dataset.id : null); });
+sun.addEventListener("pointerleave", () => lightUp(null));
+const toggleArea = k => { setOpen(k, !open.has(k)); refresh(); const g = sun.querySelector(`.shead[data-b="${k}"]`); if (g) g.focus(); };
+sun.addEventListener("keydown", e => { const g = e.target.closest(".shead"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleArea(g.dataset.b); } });
+sun.addEventListener("click", e => { const g = e.target.closest(".shead"); if (g) toggleArea(g.dataset.b); });
+
+function refresh() { syncViewButtons(); ["t2", "t3", "t23"].forEach(m => document.getElementById(m + "Btn").setAttribute("aria-pressed", mode === m)); document.getElementById("conBtn").setAttribute("aria-pressed", conOn); document.getElementById("verbBtn").setAttribute("aria-pressed", verbsOn); sun.classList.toggle("verbs", verbsOn); drawSun(); }
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+if (document.fonts && document.fonts.load) Promise.all(['500 13.5px "Instrument Sans"', '600 15.5px "Instrument Sans"', '400 12.5px "Instrument Sans"', 'italic 400 14px Newsreader'].map(f => document.fonts.load(f))).then(refresh, refresh);
+refresh();
+</script>
+</body>
+</html>
